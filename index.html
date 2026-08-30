@@ -27,7 +27,6 @@
     <div class="card">
         <h1>📊 10万字日语长文本智能看板</h1>
         <div class="sub">点击单词直达 MOJi 词典。已智能剔除符号标点，动词/形容词已自动还原为辞书形（原型）。</div>
-        
         <div class="filter-section">
             <div class="filter-title">按词性筛选</div>
             <div class="btn-group">
@@ -37,75 +36,45 @@
                 <button id="p-a" onclick="setFilter('pos', '形容詞')">形容词</button>
             </div>
         </div>
-
         <div class="filter-section">
-            <div class="filter-title">按字形分流 (平/片/汉字)</div>
+            <div class="filter-title">按字形分流</div>
             <div class="btn-group">
                 <button id="t-all" class="active" onclick="setFilter('type', '')">全部字形</button>
                 <button id="t-kan" onclick="setFilter('type', '汉字词')">含汉字词</button>
-                <button id="t-kata" onclick="setFilter('type', '片假名')">纯片假名(外来语)</button>
-                <button id="t-hira" onclick="setFilter('type', '平假名')">纯平假名(和语词)</button>
+                <button id="t-kata" onclick="setFilter('type', '片假名')">纯片假名</button>
+                <button id="t-hira" onclick="setFilter('type', '平假名')">纯平假名</button>
             </div>
         </div>
-
         <div class="list" id="word-list">正在初始化核心数据...</div>
     </div>
     <script>
-        let allWords = [];
-        let currentPos = '';
-        let currentType = '';
-
+        let allWords = []; let currentPos = ''; let currentType = '';
         async function loadData() {
-            try {
-                const res = await fetch('word_data.json');
-                allWords = await res.json();
-                render();
-            } catch(e) {
-                document.getElementById('word-list').innerText = '数据未就绪，请在 Termux 运行统计并推送后再刷新。';
-            }
+            try { const res = await fetch('word_data.json'); allWords = await res.json(); render(); }
+            catch(e) { document.getElementById('word-list').innerText = '数据未就绪，请在 Termux 运行统计。'; }
         }
-
         function render() {
-            const listEl = document.getElementById('word-list');
-            listEl.innerHTML = '';
-            let displayedCount = 0;
-            
+            const listEl = document.getElementById('word-list'); listEl.innerHTML = ''; let displayedCount = 0;
             for(let item of allWords) {
-                if (displayedCount >= 300) break; // 默认展示前300个核心高频词
-                
+                if (displayedCount >= 300) break;
                 if (currentPos && item.POS !== currentPos) continue;
                 if (currentType && !item.Type.includes(currentType)) continue;
-                
                 displayedCount++;
-                const div = document.createElement('div');
-                div.className = 'item';
-                div.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="font-size:11px; color:#cbd5e1; font-weight:bold; width:25px;">#${displayedCount}</span>
-                        <div>
-                            <a class="word-link" href="https://mojidict.com{item.Word}" target="_blank">${item.Word}</a>
-                            <span class="tag-pos">${item.POS.replace('名詞','名词').replace('動詞','动词').replace('形容詞','形容词')}</span>
-                            <span class="tag-type">${item.Type}</span>
-                        </div>
-                    </div>
-                    <span class="count">出现 ${item.Count} 次</span>
-                `;
+                const div = document.createElement('div'); div.className = 'item';
+                div.innerHTML = `<div style="display:flex; align-items:center; gap:10px;"><span style="font-size:11px; color:#cbd5e1; font-weight:bold; width:25px;">#${displayedCount}</span><div><a class="word-link" href="https://mojidict.com{item.Word}" target="_blank">${item.Word}</a><span class="tag-pos">${item.POS.replace('名詞','名词').replace('動詞','动词').replace('形容詞','形容词')}</span><span class="tag-type">${item.Type}</span></div></div><span class="count">出现 ${item.Count} 次</span>`;
                 listEl.appendChild(div);
             }
             if(displayedCount === 0) listEl.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:20px;font-size:12px;">没有找到符合该筛选组合的单词</div>';
         }
-
         function setFilter(category, value) {
             if(category === 'pos') {
-                currentPos = value;
-                document.querySelectorAll('[id^="p-"]').forEach(b => b.classList.remove('active'));
+                currentPos = value; document.querySelectorAll('[id^="p-"]').forEach(b => b.classList.remove('active'));
                 if(!value) document.getElementById('p-all').classList.add('active');
                 else if(value==='名詞') document.getElementById('p-n').classList.add('active');
                 else if(value==='動詞') document.getElementById('p-v').classList.add('active');
                 else if(value==='形容詞') document.getElementById('p-a').classList.add('active');
             } else {
-                currentType = value;
-                document.querySelectorAll('[id^="t-"]').forEach(b => b.classList.remove('active'));
+                currentType = value; document.querySelectorAll('[id^="t-"]').forEach(b => b.classList.remove('active'));
                 if(!value) document.getElementById('t-all').classList.add('active');
                 else if(value==='汉字词') document.getElementById('t-kan').classList.add('active');
                 else if(value==='片假名') document.getElementById('t-kata').classList.add('active');
